@@ -1,72 +1,85 @@
 // Automatic toggle entries
 
-var WID = 572181;
+const WID = 572181; //Principal Rescates
+const AUTH = 'Basic ZDExZjFjZjA0OTE1ZTgyMjljN2EyZDVlNzcwNDc0YjI6YXBpX3Rva2Vu';
+const dirty_at = moment().format();
+const offset = '-04:00';
 
-var newEntry = function(wid, project, description, start, stop, duration) {
+var guid = function() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random()*16|0,v=c=='x'?r:r&0x3|0x8;
+    return v.toString(16);
+  });
+}
+
+var newEntry = function(project, description, start, stop, duration, tags) {
   $.ajax({
-    url: "https://www.toggl.com/api/v8/time_entries",
+    url: "https://toggl.com/api/v8/time_entries",
     data: JSON.stringify({
         time_entry: {
           description:  description,
-          duration:     duration,  
+          duration:     duration,
           pid:          project,
           start:        start,
           stop:         stop,
-          wid:          wid,
+          wid:          WID,
+          tags:         tags,
 
-          billable:     false,
+          dirty_at:     dirty_at,
+          billable:     true,
           created_with: "TogglNext",
           duronly:      false,
-          //guid:         "7b3185d6-8383-473c-b83a-8255c3ac3158",
-          tags:         [],
-          tid:          null
+          guid:         guid(),
+          tid:          null,
+          store_start_and_stop_time: true,
         }
       }),
-    type: "POST",
-    contentType: 'application/json',
-    dataType: 'json',
+    'type': "POST",
+    'contentType': 'application/json',
+    'dataType': 'json',
+    'Authorization': AUTH,
+    'App-Version': '3.84.25'
   }).done(function(response, textStatus, jqXHR){
     console.log("Entry OK start:" + start + "  stop:" + stop )
   })
 };
 
-var newAutoDayEntry = function(wid, project, description, date) {
-  var txtStart    = date + 'T09:00:00-02:00'; //formato "2015-04-02T09:00:00-02:00",
-  var txtStop     = date + 'T13:00:00-02:00'; //formato "2015-04-02T09:00:00-02:00",
-  var momStart    = moment(txtStart).add(300 - Math.round(Math.random()*600), "seconds")
-  var momStop     = moment(txtStop).subtract(Math.random()*60), "seconds")
-  var duration    = momStop.diff(momStart) / 1000;
-
-  newEntry(wid, project, description, momStart.format(), momStop.format(), duration)
-
-  txtStart    = date + 'T14:00:00-02:00'; 
-  txtStop     = date + 'T18:10:00-02:00'; 
-  momStart    = moment(txtStart).add(Math.round(Math.random()*120), "seconds")
-  momStop     = moment(txtStop).subtract(600 - Math.random()*1200), "seconds")
-  duration    = momStop.diff(momStart) / 1000;
-
-  newEntry(wid, project, description, momStart.format(), momStop.format(), duration)
-
+//time around function
+var lastTime = null;
+var ta = function(time, around) {
+  const mTime = moment(time, 'HH:mm');
+  if (mTime.isValid()) {
+    lastTime = mTime.add((2*around*Math.random()) - around, 'minute').format('HH:mm');
+  }
+  return lastTime;
 }
 
+var prjOtorgaClv = 4657211;
+var prjInterno   = 4653869;
+var prjOrglab    = 10986600;
+
 var entries = [
-
-  {dt:"2015-04-25", ti:"09:01", tf:"12:56", prj:9038936, dsc:"Reinversiones" },
-  {dt:"2015-04-25", ti:"14:01", tf:"18:20", prj:9038936, dsc:"Reinversiones" },
-  {dt:"2015-04-26", ti:"09:05", tf:"12:57", prj:9038936, dsc:"Reinversiones" },
-  {dt:"2015-04-26", ti:"14:02", tf:"18:21", prj:9038936, dsc:"Reinversiones" },
-  {dt:"2015-04-27", ti:"09:02", tf:"12:58", prj:9038936, dsc:"Reinversiones" },
-  {dt:"2015-04-27", ti:"14:04", tf:"18:22", prj:9038936, dsc:"Reinversiones" },
-  {dt:"2015-04-28", ti:"09:08", tf:"12:59", prj:9038936, dsc:"Reinversiones" },
-  {dt:"2015-04-28", ti:"14:07", tf:"18:28", prj:9038936, dsc:"Reinversiones" },
-
+  {dt:"2016-11-28", ti:ta("08:30", 10), tf:ta("12:30",  0), prj:prjOrglab,  dsc:"904", tags: [] },
+  {dt:"2016-11-28", ti:ta("*",      0), tf:ta("13:30", 15), prj:prjOrglab,  dsc:"Standup", tags: [] },
+  {dt:"2016-11-28", ti:ta("14:10", 15), tf:ta("18:00", 20), prj:prjOrglab,  dsc:"904", tags: [] },
+  {dt:"2016-11-29", ti:ta("08:30", 10), tf:ta("12:30",  0), prj:prjOrglab,  dsc:"932", tags: [] },
+  {dt:"2016-11-29", ti:ta("*",      0), tf:ta("13:30", 15), prj:prjOrglab,  dsc:"Standup", tags: [] },
+  {dt:"2016-11-29", ti:ta("14:10", 15), tf:ta("18:00", 20), prj:prjOrglab,  dsc:"932", tags: [] },
+  {dt:"2016-11-30", ti:ta("08:30", 10), tf:ta("12:30",  0), prj:prjOrglab,  dsc:"932", tags: [] },
+  {dt:"2016-11-30", ti:ta("*",      0), tf:ta("13:30", 15), prj:prjOrglab,  dsc:"Standup", tags: [] },
+  {dt:"2016-11-30", ti:ta("14:10", 15), tf:ta("18:00", 20), prj:prjOrglab,  dsc:"932", tags: [] },
+  {dt:"2016-12-01", ti:ta("08:30", 10), tf:ta("12:30",  0), prj:prjOrglab,  dsc:"1109", tags: [] },
+  {dt:"2016-12-01", ti:ta("*",      0), tf:ta("13:30", 15), prj:prjOrglab,  dsc:"Standup", tags: [] },
+  {dt:"2016-12-01", ti:ta("14:10", 15), tf:ta("18:00", 20), prj:prjOrglab,  dsc:"1109", tags: [] },
+  {dt:"2016-12-02", ti:ta("08:30", 10), tf:ta("12:30",  0), prj:prjInterno, dsc:"1109", tags: [] },
+  {dt:"2016-12-02", ti:ta("*",      0), tf:ta("13:30", 15), prj:prjOrglab,  dsc:"Standup", tags: [] },
+  {dt:"2016-12-02", ti:ta("14:10", 15), tf:ta("16:20", 15), prj:prjOrglab,  dsc:"1109", tags: [] },
 ];
 
 _.each(entries, function(e) {
-  var start    = e['dt'] + 'T' + e['ti'] + ':00-02:00'; //formato "2015-04-02T09:00:00-02:00",
-  var stop     = e['dt'] + 'T' + e['tf'] + ':00-02:00'; //formato "2015-04-02T09:00:00-02:00",
+  var start    = e['dt'] + 'T' + e['ti'] + ':00' + offset;
+  var stop     = e['dt'] + 'T' + e['tf'] + ':00' + offset;
   var duration = moment(stop).diff(moment(start)) / 1000;
-  newEntry(WID, e['prj'], e['dsc'], start, stop, duration);
+  var tags = !!e['tags'] ? e['tags'] : []
+  newEntry(e['prj'], e['dsc'], start, stop, duration, tags);
 });
-
-
